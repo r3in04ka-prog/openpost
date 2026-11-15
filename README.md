@@ -2,6 +2,8 @@
 
 Настольный почтовый клиент с открытым исходным кодом. Тёмный интерфейс с розовыми акцентами, три колонки и светлая область чтения. Python 3.11+, CustomTkinter и Pillow.
 
+![OpenPost: деморежим](https://github.com/r3in04ka-prog/openpost/releases/latest/download/openpost-preview.png)
+
 ## Запуск
 
 ### Windows: установщик
