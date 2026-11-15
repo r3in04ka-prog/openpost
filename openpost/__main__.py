@@ -1,3 +1,3 @@
-from .app import main
+from .shell import main
 
 main()

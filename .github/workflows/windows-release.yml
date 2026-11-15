@@ -14,9 +14,10 @@ jobs:
         with:
           python-version: '3.13'
       - run: python -m unittest discover -s tests -v
+      - run: python -m pip install .
       - run: python -m tests.gui_smoke
       - run: python -m pip install pyinstaller==6.16.0
-      - run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name OpenPost --add-data "LICENSE;." launcher.py
+      - run: python -m PyInstaller --noconfirm --clean --windowed --onedir --collect-all customtkinter --add-data "openpost/assets;openpost/assets" --name OpenPost --add-data "LICENSE;." launcher.py
       - name: Build setup
         shell: pwsh
         run: |
@@ -26,7 +27,7 @@ jobs:
         shell: pwsh
         run: |
           $target = Join-Path $env:RUNNER_TEMP 'OpenPost-test'
-          $setup = (Resolve-Path 'release/OpenPost-Setup-0.1.0-windows-x64.exe').Path
+          $setup = (Resolve-Path 'release/OpenPost-Setup-0.2.0-windows-x64.exe').Path
           $install = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR="' + $target + '"')) -WindowStyle Hidden -Wait -PassThru
           if ($install.ExitCode -ne 0) { throw 'Installation failed' }
           $app = Start-Process (Join-Path $target 'OpenPost.exe') -PassThru
@@ -43,6 +44,10 @@ jobs:
           $file = Get-Item release/*.exe
           $hash = (Get-FileHash $file -Algorithm SHA256).Hash.ToLower()
           "$hash  $($file.Name)" | Set-Content release/SHA256SUMS.txt
+      - name: Capture interface
+        run: |
+          python -m tests.capture_preview
+          Move-Item openpost-preview.png release/openpost-preview.png
       - uses: actions/upload-artifact@v4
         with:
           name: OpenPost-windows-x64

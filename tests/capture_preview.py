@@ -1,11 +1,11 @@
 """Capture the actual application using synthetic demo content on CI."""
 from PIL import ImageGrab
-from openpost.app import App
+from openpost.shell import App
 
 app = App()
-app.geometry("960x600+10+10")
+app.geometry("960x620+10+10")
 app.demo()
-app.list.selection_set("0")
+app.select(0)
 app.read()
 app.update()
 

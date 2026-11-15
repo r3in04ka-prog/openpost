@@ -4,15 +4,18 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openpost-mail"
-version = "0.1.0"
+version = "0.2.0"
 description = "A small, local-first, open-source desktop IMAP/SMTP email client"
 requires-python = ">=3.11"
 license = {text = "MIT"}
 readme = "README.md"
-dependencies = []
+dependencies = ["customtkinter==5.2.2", "Pillow==11.3.0"]
 
 [project.gui-scripts]
-openpost = "openpost.app:main"
+openpost = "openpost.shell:main"
 
 [tool.setuptools.packages.find]
 include = ["openpost*"]
+
+[tool.setuptools.package-data]
+openpost = ["assets/*.png"]
