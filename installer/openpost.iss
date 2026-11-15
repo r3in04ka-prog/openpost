@@ -1,7 +1,7 @@
 [Setup]
 AppId={{92DC757B-A0C8-4821-B24D-1AC1F574BD5E}
 AppName=OpenPost
-AppVersion=0.2.0
+AppVersion=0.2.1
 AppPublisher=OpenPost contributors
 AppPublisherURL=https://github.com/r3in04ka-prog/openpost
 DefaultDirName={localappdata}\Programs\OpenPost
@@ -11,7 +11,7 @@ PrivilegesRequired=lowest
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 OutputDir=..\release
-OutputBaseFilename=OpenPost-Setup-0.2.0-windows-x64
+OutputBaseFilename=OpenPost-Setup-0.2.1-windows-x64
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern

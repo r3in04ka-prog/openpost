@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "openpost-mail"
-version = "0.2.0"
+version = "0.2.1"
 description = "A small, local-first, open-source desktop IMAP/SMTP email client"
 requires-python = ">=3.11"
 license = {text = "MIT"}
@@ -18,4 +18,4 @@ openpost = "openpost.shell:main"
 include = ["openpost*"]
 
 [tool.setuptools.package-data]
-openpost = ["assets/*.png"]
+openpost = ["assets/*.png", "assets/*.txt"]

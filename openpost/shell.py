@@ -36,6 +36,8 @@ class App(ctk.CTk):
         self.current = None
         self.starred = set()
         self.filter = "Все"
+        self.icons = {name: ctk.CTkImage(Image.open(Path(__file__).parent / "assets" / f"{name}.png"), size=(18, 18))
+                      for name in ("Inbox", "Star", "Send", "Archive", "Trash2", "Plus", "Search", "RefreshCw", "UserRound", "Mail")}
         self.search = tk.StringVar()
         self.status = tk.StringVar(value="Подключите почту или откройте демо")
         self.grid_columnconfigure(1, weight=1)
@@ -46,12 +48,13 @@ class App(ctk.CTk):
         self.sidebar.grid_columnconfigure(0, weight=1)
         self.sidebar.grid_rowconfigure(13, weight=1)
         ctk.CTkLabel(self.sidebar, text="openpost", font=("Segoe UI", 22, "bold"), anchor="w").grid(row=0, column=0, sticky="ew", padx=22, pady=(23, 22))
-        ctk.CTkButton(self.sidebar, text="Новое письмо", height=43, corner_radius=22,
+        ctk.CTkButton(self.sidebar, text="Новое письмо", image=self.icons["Plus"], height=43, corner_radius=22,
             fg_color=ROSE, hover_color="#dba1b0", text_color="#382d32", font=("Segoe UI", 13, "bold"), command=self.compose).grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 20))
         self.nav = {}
         for row, name in enumerate(["Входящие", "Важные", "Отправленные", "Архив", "Удалённые"], 2):
             enabled = name in ("Входящие", "Важные")
-            button = ctk.CTkButton(self.sidebar, text=name, anchor="w", height=37, corner_radius=9,
+            icon_name = {"Входящие": "Inbox", "Важные": "Star", "Отправленные": "Send", "Архив": "Archive", "Удалённые": "Trash2"}[name]
+            button = ctk.CTkButton(self.sidebar, text=name, image=self.icons[icon_name], anchor="w", height=37, corner_radius=9,
                 fg_color="#393638" if name == "Входящие" else "transparent", hover_color="#343335",
                 text_color="#e9e2e4" if enabled else "#716e71", font=("Segoe UI", 13),
                 command=lambda n=name: self.navigate(n))
@@ -71,7 +74,7 @@ class App(ctk.CTk):
         toolbar.grid_columnconfigure(0, weight=1)
         ctk.CTkEntry(toolbar, placeholder_text="Поиск в личных и рабочих письмах…", textvariable=self.search,
             height=40, corner_radius=20, fg_color="#2c2e30", border_width=0, text_color="#eee7e9").grid(row=0, column=0, sticky="ew", padx=(0, 14))
-        ctk.CTkButton(toolbar, text="Обновить", width=88, height=35, fg_color="transparent", text_color=MUTED, hover_color=PANEL, command=self.refresh).grid(row=0, column=1)
+        ctk.CTkButton(toolbar, text="", image=self.icons["RefreshCw"], width=35, height=35, fg_color="transparent", text_color=MUTED, hover_color=PANEL, command=self.refresh).grid(row=0, column=1)
         tabs = ctk.CTkFrame(main, fg_color="transparent")
         tabs.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 13))
         self.tab_buttons = {}
@@ -154,18 +157,23 @@ class App(ctk.CTk):
             selected = i == self.current
             card = ctk.CTkFrame(self.message_list, fg_color="#634b55" if selected else "transparent", corner_radius=10, cursor="hand2")
             card.grid(row=row, column=0, sticky="ew", pady=2)
-            card.grid_columnconfigure(0, weight=1)
+            card.grid_columnconfigure(1, weight=1)
+            avatar = ctk.CTkFrame(card, width=32, height=32, corner_radius=16, fg_color="#b18f9c" if selected else "#51454c")
+            avatar.grid(row=0, column=0, rowspan=3, padx=(10, 8), sticky="n", pady=12)
+            avatar.grid_propagate(False)
+            avatar_label = ctk.CTkLabel(avatar, text="", image=self.icons["UserRound"], width=32, height=32)
+            avatar_label.pack()
             sender = letter.sender.split("<")[0].strip() or letter.sender
-            sender = sender[:25] + ("…" if len(sender) > 25 else "")
+            sender = sender[:21] + ("…" if len(sender) > 21 else "")
             title = ctk.CTkLabel(card, text=sender, font=("Segoe UI", 13, "bold"), text_color="#eee7e9", anchor="w")
-            title.grid(row=0, column=0, sticky="ew", padx=13, pady=(10, 0))
+            title.grid(row=0, column=1, sticky="ew", padx=(0, 5), pady=(10, 0))
             time = letter.date if letter.uid.startswith("demo") else ""
-            ctk.CTkLabel(card, text=time, font=("Segoe UI", 10), text_color="#c0b7bc").grid(row=0, column=1, padx=(0, 10), pady=(10, 0))
-            subject = ctk.CTkLabel(card, text=letter.subject[:37], text_color="#e4dce0", font=("Segoe UI", 12), anchor="w")
-            subject.grid(row=1, column=0, columnspan=2, sticky="ew", padx=13)
-            preview = ctk.CTkLabel(card, text=letter.body.replace("\n", " ")[:42] + "…", text_color="#ada4aa", font=("Segoe UI", 11), anchor="w")
-            preview.grid(row=2, column=0, columnspan=2, sticky="ew", padx=13, pady=(0, 10))
-            for widget in (card, title, subject, preview):
+            ctk.CTkLabel(card, text=time, font=("Segoe UI", 10), text_color="#c0b7bc").grid(row=0, column=2, padx=(0, 10), pady=(10, 0))
+            subject = ctk.CTkLabel(card, text=letter.subject[:29], text_color="#e4dce0", font=("Segoe UI", 12), anchor="w")
+            subject.grid(row=1, column=1, columnspan=2, sticky="ew", padx=(0, 10))
+            preview = ctk.CTkLabel(card, text=letter.body.replace("\n", " ")[:31] + "…", text_color="#ada4aa", font=("Segoe UI", 11), anchor="w")
+            preview.grid(row=2, column=1, columnspan=2, sticky="ew", padx=(0, 10), pady=(0, 10))
+            for widget in (card, title, subject, preview, avatar, avatar_label):
                 widget.bind("<Button-1>", lambda _, index=i: self.select(index))
         if not visible:
             ctk.CTkLabel(self.message_list, text="Здесь пока нет писем", text_color=MUTED).grid(row=0, column=0, pady=35)
