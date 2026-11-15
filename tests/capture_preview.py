@@ -3,7 +3,7 @@ from PIL import ImageGrab
 from openpost.app import App
 
 app = App()
-app.geometry("1180x760+30+30")
+app.geometry("960x600+10+10")
 app.demo()
 app.list.selection_set("0")
 app.read()
