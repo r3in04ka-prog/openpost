@@ -76,6 +76,9 @@ class App(ctk.CTk):
             height=40, corner_radius=20, fg_color="#2c2e30", border_width=0, text_color="#eee7e9")
         self.search_entry.grid(row=0, column=0, sticky="ew", padx=(0, 14))
         self.search_entry.bind("<KeyRelease>", lambda _: self.search.set(self.search_entry.get()))
+        self.search_hint = ctk.CTkLabel(self.search_entry, text="Поиск в личных и рабочих письмах…", font=("Segoe UI", 12), text_color="#aaa3a7", fg_color="#2c2e30", height=24)
+        self.search_hint.place(x=15, rely=0.5, anchor="w")
+        self.search_hint.bind("<Button-1>", lambda _: self.search_entry.focus_set())
         ctk.CTkButton(toolbar, text="", image=self.icons["RefreshCw"], width=35, height=35, fg_color="transparent", text_color=MUTED, hover_color=PANEL, command=self.refresh).grid(row=0, column=1)
         tabs = ctk.CTkFrame(main, fg_color="transparent")
         tabs.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 13))
@@ -111,9 +114,16 @@ class App(ctk.CTk):
         self.star_button = ctk.CTkButton(footer, text="В важные", width=84, fg_color="transparent", text_color="#887d82", hover_color="#e3dadc", command=self.toggle_star)
         self.star_button.pack(side="right", padx=4)
         ctk.CTkLabel(main, textvariable=self.status, text_color="#8f888d", font=("Segoe UI", 10), anchor="w").grid(row=3, column=0, sticky="ew", padx=18, pady=(0, 10))
-        self.search.trace_add("write", lambda *_: self.render())
+        self.search.trace_add("write", self.search_changed)
         self.show_body("Подключите почтовый ящик или нажмите «Деморежим», чтобы посмотреть, как всё устроено.")
         self.after(100, self.poll)
+
+    def search_changed(self, *_):
+        if self.search.get():
+            self.search_hint.place_forget()
+        else:
+            self.search_hint.place(x=15, rely=0.5, anchor="w")
+        self.render()
 
     def navigate(self, name):
         if name not in ("Входящие", "Важные"):
@@ -191,6 +201,9 @@ class App(ctk.CTk):
     def show_body(self, text):
         for widget in self.content_frame.winfo_children():
             widget.destroy()
+        if self.selected() and self.selected().uid == "demo-clinic":
+            ctk.CTkLabel(self.content_frame, text=text, text_color="#51494c", font=("Segoe UI", 14), wraplength=340, justify="left", anchor="nw").grid(row=0, column=0, sticky="ew", padx=4, pady=(0, 8))
+            return
         body = ctk.CTkTextbox(self.content_frame, fg_color=PAPER, text_color="#51494c", font=("Segoe UI", 14), wrap="word", height=125 if self.selected() and self.selected().uid == "demo-clinic" else 250, border_width=0, activate_scrollbars=True)
         body.grid(row=0, column=0, sticky="ew", padx=4)
         body.insert("1.0", text)
