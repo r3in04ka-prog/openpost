@@ -72,8 +72,10 @@ class App(ctk.CTk):
         toolbar = ctk.CTkFrame(main, fg_color="transparent")
         toolbar.grid(row=0, column=0, sticky="ew", padx=16, pady=(19, 12))
         toolbar.grid_columnconfigure(0, weight=1)
-        ctk.CTkEntry(toolbar, placeholder_text="Поиск в личных и рабочих письмах…", textvariable=self.search,
-            height=40, corner_radius=20, fg_color="#2c2e30", border_width=0, text_color="#eee7e9").grid(row=0, column=0, sticky="ew", padx=(0, 14))
+        self.search_entry = ctk.CTkEntry(toolbar, placeholder_text="Поиск в личных и рабочих письмах…",
+            height=40, corner_radius=20, fg_color="#2c2e30", border_width=0, text_color="#eee7e9")
+        self.search_entry.grid(row=0, column=0, sticky="ew", padx=(0, 14))
+        self.search_entry.bind("<KeyRelease>", lambda _: self.search.set(self.search_entry.get()))
         ctk.CTkButton(toolbar, text="", image=self.icons["RefreshCw"], width=35, height=35, fg_color="transparent", text_color=MUTED, hover_color=PANEL, command=self.refresh).grid(row=0, column=1)
         tabs = ctk.CTkFrame(main, fg_color="transparent")
         tabs.grid(row=1, column=0, sticky="ew", padx=16, pady=(0, 13))
@@ -97,7 +99,7 @@ class App(ctk.CTk):
         self.reader.grid_columnconfigure(0, weight=1)
         self.reader.grid_rowconfigure(3, weight=1)
         self.title_label = ctk.CTkLabel(self.reader, text="Ваша почта. Ваше пространство.", anchor="w", text_color="#2f2b2c", font=("Segoe UI", 17, "bold"), wraplength=390, justify="left")
-        self.title_label.grid(row=0, column=0, sticky="ew", padx=22, pady=(22, 13))
+        self.title_label.grid(row=0, column=0, sticky="ew", padx=22, pady=(16, 8))
         self.sender_label = ctk.CTkLabel(self.reader, text="", text_color="#6d6568", font=("Segoe UI", 12), justify="left", anchor="w", wraplength=380)
         self.sender_label.grid(row=1, column=0, sticky="ew", padx=22, pady=(0, 15))
         self.content_frame = ctk.CTkScrollableFrame(self.reader, fg_color=PAPER, corner_radius=0, scrollbar_button_color="#d9d1d2", scrollbar_button_hover_color="#b7a2aa")
@@ -165,14 +167,14 @@ class App(ctk.CTk):
             avatar_label.pack()
             sender = letter.sender.split("<")[0].strip() or letter.sender
             sender = sender[:21] + ("…" if len(sender) > 21 else "")
-            title = ctk.CTkLabel(card, text=sender, font=("Segoe UI", 13, "bold"), text_color="#eee7e9", anchor="w")
-            title.grid(row=0, column=1, sticky="ew", padx=(0, 5), pady=(10, 0))
+            title = ctk.CTkLabel(card, text=sender, height=20, font=("Segoe UI", 13, "bold"), text_color="#eee7e9", anchor="w")
+            title.grid(row=0, column=1, sticky="ew", padx=(0, 5), pady=(8, 0))
             time = letter.date if letter.uid.startswith("demo") else ""
-            ctk.CTkLabel(card, text=time, font=("Segoe UI", 10), text_color="#c0b7bc").grid(row=0, column=2, padx=(0, 10), pady=(10, 0))
-            subject = ctk.CTkLabel(card, text=letter.subject[:29], text_color="#e4dce0", font=("Segoe UI", 12), anchor="w")
+            ctk.CTkLabel(card, text=time, height=20, font=("Segoe UI", 10), text_color="#c0b7bc").grid(row=0, column=2, padx=(0, 10), pady=(8, 0))
+            subject = ctk.CTkLabel(card, text=letter.subject[:29], height=20, text_color="#e4dce0", font=("Segoe UI", 12), anchor="w")
             subject.grid(row=1, column=1, columnspan=2, sticky="ew", padx=(0, 10))
-            preview = ctk.CTkLabel(card, text=letter.body.replace("\n", " ")[:31] + "…", text_color="#ada4aa", font=("Segoe UI", 11), anchor="w")
-            preview.grid(row=2, column=1, columnspan=2, sticky="ew", padx=(0, 10), pady=(0, 10))
+            preview = ctk.CTkLabel(card, text=letter.body.replace("\n", " ")[:31] + "…", height=18, text_color="#ada4aa", font=("Segoe UI", 11), anchor="w")
+            preview.grid(row=2, column=1, columnspan=2, sticky="ew", padx=(0, 10), pady=(0, 8))
             for widget in (card, title, subject, preview, avatar, avatar_label):
                 widget.bind("<Button-1>", lambda _, index=i: self.select(index))
         if not visible:
@@ -189,7 +191,7 @@ class App(ctk.CTk):
     def show_body(self, text):
         for widget in self.content_frame.winfo_children():
             widget.destroy()
-        body = ctk.CTkTextbox(self.content_frame, fg_color=PAPER, text_color="#51494c", font=("Segoe UI", 14), wrap="word", height=160 if self.selected() and self.selected().uid == "demo-clinic" else 250, border_width=0, activate_scrollbars=True)
+        body = ctk.CTkTextbox(self.content_frame, fg_color=PAPER, text_color="#51494c", font=("Segoe UI", 14), wrap="word", height=125 if self.selected() and self.selected().uid == "demo-clinic" else 250, border_width=0, activate_scrollbars=True)
         body.grid(row=0, column=0, sticky="ew", padx=4)
         body.insert("1.0", text)
         body.configure(state="disabled")
@@ -207,8 +209,9 @@ class App(ctk.CTk):
         self.show_body(letter.body)
         photo = Path(__file__).parent / "assets" / "clinic.png"
         if letter.uid == "demo-clinic" and photo.exists():
-            self.photo = ctk.CTkImage(Image.open(photo), size=(340, 195))
-            ctk.CTkLabel(self.content_frame, text="", image=self.photo, corner_radius=10).grid(row=1, column=0, pady=(10, 16))
+            from PIL import ImageOps
+            self.photo = ctk.CTkImage(ImageOps.fit(Image.open(photo), (680, 300)), size=(340, 150))
+            ctk.CTkLabel(self.content_frame, text="", image=self.photo, corner_radius=10).grid(row=1, column=0, pady=(8, 0))
 
     def toggle_star(self):
         letter = self.selected()
@@ -225,6 +228,7 @@ class App(ctk.CTk):
         self.account = None
         self.account_name.configure(text="Демонстрационный ящик")
         self.search.set("")
+        self.search_entry.delete(0, "end")
         self.filter = "Все"
         self.loaded([
             Letter("demo-clinic", "Smile Talk Clinic", "Подтверждение записи", "12:24", "Здравствуйте, Анастасия!\n\nПодтверждаем вашу запись на профессиональную гигиену зубов 17 октября в 16:00.\n\nЖдём вас в Smile Talk!", "hello@example.org"),
