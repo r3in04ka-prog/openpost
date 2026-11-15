@@ -1,0 +1,54 @@
+name: Windows installer
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - run: python -m unittest discover -s tests -v
+      - run: python -m tests.gui_smoke
+      - run: python -m pip install pyinstaller==6.16.0
+      - run: python -m PyInstaller --noconfirm --clean --windowed --onedir --name OpenPost --add-data "LICENSE;." launcher.py
+      - name: Build setup
+        shell: pwsh
+        run: |
+          & "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe" installer/openpost.iss
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Verify installed app launches
+        shell: pwsh
+        run: |
+          $target = Join-Path $env:RUNNER_TEMP 'OpenPost-test'
+          $setup = (Resolve-Path 'release/OpenPost-Setup-0.1.0-windows-x64.exe').Path
+          $install = Start-Process $setup -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART',('/DIR="' + $target + '"')) -WindowStyle Hidden -Wait -PassThru
+          if ($install.ExitCode -ne 0) { throw 'Installation failed' }
+          $app = Start-Process (Join-Path $target 'OpenPost.exe') -PassThru
+          Start-Sleep -Seconds 5
+          $app.Refresh()
+          if ($app.HasExited -or $app.MainWindowHandle -eq 0) { throw 'Installed app did not open a window' }
+          $app.CloseMainWindow() | Out-Null
+          if (-not $app.WaitForExit(10000)) { throw 'App did not close' }
+          $uninstall = Start-Process (Join-Path $target 'unins000.exe') -ArgumentList @('/VERYSILENT','/SUPPRESSMSGBOXES','/NORESTART') -WindowStyle Hidden -Wait -PassThru
+          if ($uninstall.ExitCode -ne 0) { throw 'Uninstall failed' }
+      - name: Hash installer
+        shell: pwsh
+        run: |
+          $file = Get-Item release/*.exe
+          $hash = (Get-FileHash $file -Algorithm SHA256).Hash.ToLower()
+          "$hash  $($file.Name)" | Set-Content release/SHA256SUMS.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OpenPost-windows-x64
+          path: release/*
+      - name: Publish GitHub release
+        if: startsWith(github.ref, 'refs/tags/')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "${{ github.ref_name }}" release/* --title "OpenPost ${{ github.ref_name }}" --notes "Windows x64 installer. Python is included. One mail account at a time. Initial version; OAuth and attachments are not supported. Installer is unsigned."
