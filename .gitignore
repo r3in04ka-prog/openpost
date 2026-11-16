@@ -10,3 +10,4 @@ build/
 .build-tools/
 *.spec
 release/
+assets/demo/frame-*.png
