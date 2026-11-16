@@ -1,0 +1,9 @@
+changelog:
+  exclude:
+    labels:
+      - skip-changelog
+  categories:
+    - title: Что изменилось
+      labels:
+        - "*"
+

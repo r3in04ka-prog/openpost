@@ -1,0 +1,48 @@
+name: Сообщить об ошибке
+description: Расскажите, что не работает и как повторить проблему.
+title: "[Ошибка] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Спасибо за помощь OpenPost! Перед отправкой проверьте похожие issues.
+        Не публикуйте пароли, ключи, личную переписку и другие персональные данные.
+  - type: input
+    id: version
+    attributes:
+      label: Версия приложения
+      placeholder: 0.2.2 или запуск из исходников с номером коммита
+    validations:
+      required: true
+  - type: input
+    id: environment
+    attributes:
+      label: Операционная система и способ установки
+      placeholder: Windows 11 x64, установщик из Releases
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Как повторить
+      description: Опишите действия по порядку. Можно использовать деморежим.
+      placeholder: |
+        1. Открываю приложение
+        2. Нажимаю…
+        3. Вижу…
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Что ожидалось
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Что произошло
+      description: Текст ошибки и снимок окна, если он помогает. Скройте личные данные.
+    validations:
+      required: true
+

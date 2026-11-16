@@ -1,0 +1,33 @@
+name: Предложить идею
+description: Объясните задачу, которую хотите решать с OpenPost.
+title: "[Идея] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Какая задача сейчас неудобна
+      description: Опишите свой сценарий, а не только название функции.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Как должно работать
+      description: Что вы хотели бы сделать и какой результат получить?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Как решаете это сейчас
+    validations:
+      required: false
+  - type: checkboxes
+    id: help
+    attributes:
+      label: Как можете помочь
+      options:
+        - label: Могу проверить решение в своей системе
+        - label: Могу предложить макет или описание сценария
+        - label: Могу подготовить pull request
+
